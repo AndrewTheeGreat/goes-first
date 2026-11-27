@@ -148,6 +148,11 @@ footer button{background:none;border:0;color:var(--muted);text-decoration:underl
           <button data-min="2" aria-pressed="true">2 min</button>
           <button data-min="3" aria-pressed="false">3 min</button>
         </div>
+        <div class="seg" id="soundSeg" role="group" aria-label="Sound">
+          <button data-sound="off" aria-pressed="false">Silent</button>
+          <button data-sound="tone" aria-pressed="false">Tone</button>
+          <button data-sound="waves" aria-pressed="false">Waves</button>
+        </div>
         <button class="btn primary" id="settleBtn">Begin</button>
       </div>
       <div class="breath">
@@ -306,12 +311,95 @@ function breathPos(elapsed, total){
   }
 }
 function ease(x){ return 0.5-0.5*Math.cos(Math.PI*x); }
+
+/* Sound: generated live with Web Audio, no files. It swells on the
+   in-breath and softens on the out-breath, following the orb. */
+var Sound = (function(){
+  var ctx=null, master=null, swell=null, filt=null, srcs=[], mode=store.get("sound","tone"), lastSet=0;
+  function ensure(){
+    if(!ctx){
+      var AC = window.AudioContext || window.webkitAudioContext; if(!AC) return false;
+      ctx = new AC(); master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+    }
+    if(ctx.state==="suspended") ctx.resume();
+    return true;
+  }
+  function teardown(){ srcs.forEach(function(s){ try{ s.stop(); }catch(e){} }); srcs=[]; if(swell){ swell.disconnect(); swell=null; } filt=null; }
+  function build(){
+    teardown(); if(mode==="off") return;
+    swell = ctx.createGain(); swell.gain.value = 0.4;
+    filt = ctx.createBiquadFilter(); filt.type="lowpass"; filt.Q.value = 0.7;
+    filt.connect(swell); swell.connect(master);
+    if(mode==="tone"){
+      // a low open fifth with a gently beating octave
+      [[110,"sine",0.32],[164.81,"sine",0.18],[220.6,"triangle",0.10],[219.4,"sine",0.10]].forEach(function(o){
+        var osc=ctx.createOscillator(), g=ctx.createGain();
+        osc.type=o[1]; osc.frequency.value=o[0]; g.gain.value=o[2];
+        osc.connect(g); g.connect(filt); osc.start(); srcs.push(osc);
+      });
+      filt.frequency.value = 500;
+    } else {
+      // brown noise, like surf heard from a distance
+      var len = ctx.sampleRate*4, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0), last=0;
+      for(var i=0;i<len;i++){ last = (last + 0.02*(Math.random()*2-1))/1.02; d[i] = last*3.2; }
+      var n = ctx.createBufferSource(); n.buffer=buf; n.loop=true; n.connect(filt); n.start(); srcs.push(n);
+      filt.frequency.value = 300;
+    }
+  }
+  function chime(){
+    if(!ctx || mode==="off") return;
+    var t=ctx.currentTime;
+    [[392,0.16],[784,0.05],[1081.9,0.04]].forEach(function(p){
+      var o=ctx.createOscillator(), g=ctx.createGain(); o.frequency.value=p[0];
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(p[1],t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+5);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+5.1);
+    });
+  }
+  return {
+    get mode(){ return mode; },
+    setMode: function(m){ mode=m; store.set("sound",m); if(ctx && running && m!=="off") build(); },
+    start: function(){
+      if(mode==="off" || !ensure()) return;
+      build();
+      var t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
+      master.gain.linearRampToValueAtTime(0.6, t+3);
+    },
+    breath: function(level){ // level 0 (empty) .. 1 (full)
+      if(!ctx || !swell) return;
+      var now=performance.now(); if(now-lastSet<60) return; lastSet=now;
+      var t=ctx.currentTime;
+      if(mode==="tone"){ swell.gain.setTargetAtTime(0.35+0.65*level, t, 0.12); filt.frequency.setTargetAtTime(320+780*level, t, 0.12); }
+      else { swell.gain.setTargetAtTime(0.15+0.85*level, t, 0.12); filt.frequency.setTargetAtTime(220+1300*level, t, 0.12); }
+    },
+    stop: function(finished){
+      if(!ctx) return;
+      if(finished) chime();
+      var t=ctx.currentTime, fade = finished ? 4 : 1;
+      master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
+      master.gain.linearRampToValueAtTime(0, t+fade);
+      var mine = srcs.slice(), sw = swell; srcs=[]; swell=null; filt=null;
+      setTimeout(function(){ mine.forEach(function(s){ try{ s.stop(); }catch(e){} }); if(sw) sw.disconnect(); }, fade*1000+100);
+    }
+  };
+})();
+function syncSound(){ document.querySelectorAll("#soundSeg button").forEach(function(b){ b.setAttribute("aria-pressed", b.dataset.sound===Sound.mode?"true":"false"); }); }
+document.querySelectorAll("#soundSeg button").forEach(function(b){
+  b.addEventListener("click", function(){
+    var wasOff = Sound.mode==="off";
+    Sound.setMode(b.dataset.sound); syncSound();
+    if(running && wasOff && b.dataset.sound!=="off") Sound.start();
+    if(running && b.dataset.sound==="off") Sound.stop(false);
+  });
+});
+syncSound();
+
 function frame(now){
   var total = minutes*60, el = (now-t0)/1000;
   if(el >= total){ stopSettle(true); return; }
   var b = breathPos(el, total), s = b.up ? 1+1.3*ease(b.f) : 2.3-1.3*ease(b.f);
   $("orb").style.transform = "scale("+s.toFixed(3)+")";
   $("phase").textContent = b.phase;
+  Sound.breath(b.up ? ease(b.f) : 1-ease(b.f));
   var p = el/total, cue = cues[0][1];
   cues.forEach(function(c){ if(p>=c[0]) cue=c[1]; });
   setCue(cue);
@@ -320,6 +408,7 @@ function frame(now){
 }
 function stopSettle(finished){
   running=false; cancelAnimationFrame(raf);
+  Sound.stop(finished);
   $("settleBtn").textContent="Begin";
   $("orb").style.transform="scale(1)"; $("phase").textContent="";
   $("settleBar").style.width = finished ? "100%" : "0%";
@@ -328,6 +417,7 @@ function stopSettle(finished){
 $("settleBtn").addEventListener("click", function(){
   if(running){ stopSettle(false); return; }
   running=true; t0=performance.now(); $("settleBtn").textContent="Stop";
+  Sound.start();
   raf=requestAnimationFrame(frame);
 });
 
