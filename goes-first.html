@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Goes First</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <style>
 :root{
   --bg:#f6f2ea; --panel:#fffdf8; --ink:#25222b; --muted:#6c6674; --line:#e4ddd0;
@@ -15,17 +16,19 @@
     --bg:#15141b; --panel:#1e1c26; --ink:#ece8f1; --muted:#9a94a6; --line:#2e2b38;
     --accent:#e39a55; --accent-soft:#3a2a1d; --calm:#9fb0e6; --calm-soft:#262b40; --ok:#7cc497;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+    color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#15141b; --panel:#1e1c26; --ink:#ece8f1; --muted:#9a94a6; --line:#2e2b38;
   --accent:#e39a55; --accent-soft:#3a2a1d; --calm:#9fb0e6; --calm-soft:#262b40; --ok:#7cc497;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-.wrap{max-width:860px;margin:0 auto;padding:28px 16px 64px}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
 h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:34px;margin:0;letter-spacing:-.5px}
 h1 em{color:var(--accent);font-style:italic}
@@ -547,9 +550,16 @@ $("doneBtn").addEventListener("click", function(){
 });
 $("smallerBtn").addEventListener("click", function(){ smaller=!smaller; renderStep(); });
 $("otherBtn").addEventListener("click", function(){ var n=nextUndone(idx); if(n>-1 && n!==idx){ idx=n; smaller=false; saveSteps(); renderStep(); } else toast("This is the only one left."); });
+var resetArmed = null;
 $("resetBtn").addEventListener("click", function(){
-  if(!confirm("Reset One Step progress?")) return;
-  done=[]; idx=0; smaller=false; saveSteps(); renderStep();
+  var b=$("resetBtn");
+  if(!resetArmed){
+    b.textContent="Tap again to reset One Step";
+    resetArmed=setTimeout(function(){ resetArmed=null; b.textContent="Reset progress"; }, 3500);
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed=null; b.textContent="Reset progress";
+  done=[]; idx=0; smaller=false; saveSteps(); renderStep(); toast("One Step progress reset.");
 });
 renderStep();
 })();
