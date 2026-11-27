@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Goes First</title>
+<style>
+:root{
+  --bg:#f6f2ea; --panel:#fffdf8; --ink:#25222b; --muted:#6c6674; --line:#e4ddd0;
+  --accent:#b4651f; --accent-soft:#f3e3d2; --calm:#4a5a8c; --calm-soft:#e3e7f3; --ok:#3d7a55;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px rgba(40,30,20,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15141b; --panel:#1e1c26; --ink:#ece8f1; --muted:#9a94a6; --line:#2e2b38;
+    --accent:#e39a55; --accent-soft:#3a2a1d; --calm:#9fb0e6; --calm-soft:#262b40; --ok:#7cc497;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15141b; --panel:#1e1c26; --ink:#ece8f1; --muted:#9a94a6; --line:#2e2b38;
+  --accent:#e39a55; --accent-soft:#3a2a1d; --calm:#9fb0e6; --calm-soft:#262b40; --ok:#7cc497;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:28px 16px 64px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:34px;margin:0;letter-spacing:-.5px}
+h1 em{color:var(--accent);font-style:italic}
+.tag{color:var(--muted);margin:4px 0 0;font-size:15px}
+nav{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:var(--shadow)}
+nav button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;padding:7px 14px;border-radius:999px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+section[hidden]{display:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+.intro{color:var(--muted);margin:0 0 18px;max-width:62ch}
+h2{font-family:Georgia,serif;font-weight:400;font-size:24px;margin:0 0 6px}
+h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+.btn{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:9px 16px;border-radius:10px;cursor:pointer;transition:transform .08s, background .2s}
+.btn:hover{background:var(--bg)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.06);background:var(--accent)}
+.btn.small{font-size:13px;padding:6px 11px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--panel);color:var(--muted);font:inherit;font-size:14px;padding:8px 13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--calm-soft);color:var(--calm);font-weight:600}
+
+/* ---------- Go First ---------- */
+.breath{display:grid;place-items:center;padding:20px 0 8px}
+.stage{position:relative;width:min(300px,78vw);aspect-ratio:1;display:grid;place-items:center}
+.ring{position:absolute;inset:0;border-radius:50%;border:1px dashed var(--line)}
+.orb{width:38%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--calm-soft),var(--calm) 140%);box-shadow:0 0 60px -10px var(--calm);transform:scale(1);will-change:transform}
+.phase{position:absolute;bottom:-6px;left:0;right:0;text-align:center;color:var(--muted);font-size:14px;letter-spacing:.08em;text-transform:lowercase;min-height:1.5em}
+.cue{font-family:Georgia,serif;font-size:22px;text-align:center;min-height:3.2em;margin:26px auto 14px;max-width:30ch;transition:opacity .9s;display:flex;align-items:center;justify-content:center}
+.bar{height:3px;background:var(--line);border-radius:3px;overflow:hidden;margin:10px 0 16px}
+.bar i{display:block;height:100%;width:0;background:var(--calm);transition:width .3s linear}
+
+/* ---------- Forge ---------- */
+.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.reel{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px 14px;text-align:left;cursor:pointer;font:inherit;color:var(--ink);min-height:88px;transition:border-color .2s}
+.reel:hover{border-color:var(--accent)}
+.reel small{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.reel b{font-weight:600;font-size:16px;display:block;line-height:1.3}
+.reel span{font-size:12px;color:var(--muted)}
+.reel.spin b{animation:flick .35s ease}
+@keyframes flick{0%{opacity:0;transform:translateY(-8px)}100%{opacity:1;transform:none}}
+.lane{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-left:4px;vertical-align:2px;font-weight:600}
+.beats{display:grid;gap:10px;margin:14px 0}
+.beat{border-left:3px solid var(--line);padding:8px 14px;border-radius:0 10px 10px 0;transition:border-color .3s,background .3s}
+.beat.on{border-color:var(--accent);background:var(--accent-soft)}
+.beat h3{margin-bottom:2px}
+.beat p{margin:0}
+.timer{font-variant-numeric:tabular-nums;font-size:28px;font-family:Georgia,serif;min-width:3.2ch}
+.whisper{color:var(--muted);font-size:14px;font-style:italic;min-height:1.4em}
+.curve{margin-top:16px;border:1px dashed var(--accent);border-radius:12px;padding:14px 16px;display:none}
+.curve.show{display:block;animation:flick .3s ease}
+.curve .what{font-weight:600;margin:0 0 6px}
+.curve .how{margin:0}
+.partner{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.partner ol{margin:6px 0 0;padding-left:20px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+/* ---------- One Step ---------- */
+.stepcard{text-align:center;padding:34px 22px}
+.stagechip{display:inline-block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--calm);background:var(--calm-soft);padding:3px 10px;border-radius:999px}
+.steptitle{font-family:Georgia,serif;font-size:26px;line-height:1.3;margin:16px auto 10px;max-width:28ch}
+.stepwhy{color:var(--muted);max-width:52ch;margin:0 auto 22px}
+.tiny{display:none;background:var(--accent-soft);border-radius:12px;padding:12px 16px;max-width:46ch;margin:0 auto 20px}
+.tiny.show{display:block;animation:flick .3s ease}
+.tiny small{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:2px}
+.dots{display:flex;gap:5px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dots i.done{background:var(--ok)}
+.dots i.cur{outline:2px solid var(--accent);outline-offset:2px}
+.count{color:var(--muted);font-size:13px;margin-top:8px}
+details{margin-top:18px}
+summary{cursor:pointer;color:var(--muted);font-size:14px}
+.ladder{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:4px}
+.ladder li{display:flex;gap:10px;align-items:baseline;font-size:14px;padding:6px 8px;border-radius:8px}
+.ladder li.done{color:var(--muted);text-decoration:line-through}
+.ladder li button{margin-left:auto}
+.ladder .st{font-size:11px;color:var(--calm);min-width:62px;text-transform:uppercase;letter-spacing:.08em}
+.celebrate{font-family:Georgia,serif;font-size:24px}
+footer{margin-top:36px;color:var(--muted);font-size:13px;text-align:center}
+footer button{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit}
+
+@media (max-width:640px){
+  .reels{grid-template-columns:1fr}
+  .reel{min-height:0}
+  h1{font-size:28px}
+  nav{width:100%;justify-content:space-between}
+  nav button{flex:1;padding:7px 6px}
+  .steptitle{font-size:22px}
+}
+@media (prefers-reduced-motion: reduce){ .orb{transition:none} .reel.spin b,.curve.show,.tiny.show{animation:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Goes <em>First</em></h1>
+      <p class="tag">A companion for the hypnotist who teaches, and is starting to practice again.</p>
+    </div>
+    <nav role="tablist" aria-label="Modes">
+      <button role="tab" data-tab="settle" aria-selected="true">Settle</button>
+      <button role="tab" data-tab="forge" aria-selected="false">Forge</button>
+      <button role="tab" data-tab="step" aria-selected="false">One Step</button>
+    </nav>
+  </header>
+
+  <!-- ============ SETTLE ============ -->
+  <section id="settle" role="tabpanel">
+    <div class="card">
+      <h2>Go first.</h2>
+      <p class="intro">Before the client relaxes, you do. Use this before a session, or before your students pair up. Breathe with the circle, and that's all you need to do.</p>
+      <div class="row">
+        <div class="seg" id="durSeg" role="group" aria-label="Length">
+          <button data-min="1" aria-pressed="false">1 min</button>
+          <button data-min="2" aria-pressed="true">2 min</button>
+          <button data-min="3" aria-pressed="false">3 min</button>
+        </div>
+        <button class="btn primary" id="settleBtn">Begin</button>
+      </div>
+      <div class="breath">
+        <div class="stage">
+          <div class="ring"></div>
+          <div class="orb" id="orb"></div>
+          <div class="phase" id="phase"></div>
+        </div>
+      </div>
+      <div class="cue" id="cue">Whenever you're ready.</div>
+      <div class="bar"><i id="settleBar"></i></div>
+    </div>
+  </section>
+
+  <!-- ============ FORGE ============ -->
+  <section id="forge" role="tabpanel" hidden>
+    <div class="card">
+      <h2>Metaphor Forge</h2>
+      <p class="intro">No script, just three anchors and 90 seconds of speaking out loud. Tap any reel to change it, or shuffle all three. If it comes out imperfect, you're doing it right.</p>
+      <div class="reels">
+        <button class="reel" id="rIssue"><small>Client wants help with</small><b></b><span></span></button>
+        <button class="reel" id="rWorld"><small>Client's world</small><b></b><span></span></button>
+        <button class="reel" id="rShape"><small>Shape</small><b></b><span></span></button>
+      </div>
+      <div class="row">
+        <button class="btn" id="shuffleBtn">Shuffle all</button>
+        <div class="seg" id="laneSeg" role="group" aria-label="Lane">
+          <button data-lane="all" aria-pressed="true">All</button>
+          <button data-lane="ADHD" aria-pressed="false">ADHD</button>
+          <button data-lane="Addiction" aria-pressed="false">Addiction</button>
+          <button data-lane="Fitness" aria-pressed="false">Fitness</button>
+        </div>
+      </div>
+
+      <div class="beats">
+        <div class="beat" id="b0"><h3>Open · in their world</h3><p></p></div>
+        <div class="beat" id="b1"><h3>Turn · the shift</h3><p></p></div>
+        <div class="beat" id="b2"><h3>Land · leave it with them</h3><p></p></div>
+      </div>
+
+      <div class="row">
+        <button class="btn primary" id="speakBtn">Speak it · 90s</button>
+        <span class="timer" id="timer">1:30</span>
+        <button class="btn" id="curveBtn" title="Something unexpected happens">Throw a curveball</button>
+        <button class="btn" id="aiBtn" title="Copy a prompt for an AI assistant">Copy AI prompt</button>
+      </div>
+      <p class="whisper" id="whisper"></p>
+
+      <div class="curve" id="curve">
+        <h3>Curveball</h3>
+        <p class="what" id="cWhat"></p>
+        <p class="how" id="cHow"></p>
+      </div>
+
+      <div class="partner">
+        <h3>For the partner, afterwards</h3>
+        <ol>
+          <li>Which image is still with you right now?</li>
+          <li>Where in your body did something shift, even slightly?</li>
+          <li>One moment where the voice could have slowed down?</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ONE STEP ============ -->
+  <section id="step" role="tabpanel" hidden>
+    <div class="card stepcard" id="stepCard">
+      <span class="stagechip" id="sStage"></span>
+      <div class="steptitle" id="sTitle"></div>
+      <p class="stepwhy" id="sWhy"></p>
+      <div class="tiny" id="sTiny"><small>Smaller version</small><span id="sTinyText"></span></div>
+      <div class="row" style="justify-content:center" id="sBtns">
+        <button class="btn primary" id="doneBtn">Done</button>
+        <button class="btn" id="smallerBtn">Too big</button>
+        <button class="btn" id="otherBtn">Not this one today</button>
+      </div>
+      <div class="dots" id="dots"></div>
+      <div class="count" id="count"></div>
+    </div>
+    <details class="card" style="margin-top:14px">
+      <summary>See the whole ladder (only if it won't overwhelm you)</summary>
+      <ul class="ladder" id="ladder"></ul>
+    </details>
+  </section>
+
+  <footer>Everything stays in this browser. <button id="themeBtn">Toggle light/dark</button> · <button id="resetBtn">Reset progress</button></footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var $ = function(id){ return document.getElementById(id); };
+var store = {
+  get: function(k, d){ try { var v = localStorage.getItem("goesfirst:"+k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set: function(k, v){ try { localStorage.setItem("goesfirst:"+k, JSON.stringify(v)); } catch(e){} }
+};
+function toast(msg){ var t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(function(){t.classList.remove("show");},2200); }
+function pick(arr, not){ if(arr.length<2) return arr[0]; var x; do { x = arr[Math.floor(Math.random()*arr.length)]; } while(x===not); return x; }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* ---------------- Tabs + theme ---------------- */
+var tabs = document.querySelectorAll("nav button");
+function showTab(name){
+  tabs.forEach(function(b){ b.setAttribute("aria-selected", b.dataset.tab===name ? "true":"false"); });
+  ["settle","forge","step"].forEach(function(s){ $(s).hidden = s!==name; });
+  store.set("tab", name);
+}
+tabs.forEach(function(b){ b.addEventListener("click", function(){ showTab(b.dataset.tab); }); });
+showTab(store.get("tab","settle"));
+
+var theme = store.get("theme", null);
+if(theme) document.documentElement.setAttribute("data-theme", theme);
+$("themeBtn").addEventListener("click", function(){
+  var cur = document.documentElement.getAttribute("data-theme") ||
+    (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  var next = cur==="dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next); store.set("theme", next);
+});
+
+/* ---------------- SETTLE ----------------
+   Pacing then leading: starts at an even 4s in / 4s out,
+   then the exhale quietly lengthens toward 7s. */
+var minutes = 2, running = false, raf = 0, t0 = 0;
+var cues = [
+  [0.00,"Feel your feet on the floor."],
+  [0.10,"Let your shoulders find out how heavy they are."],
+  [0.22,"You don't need the script. You have them."],
+  [0.36,"Nothing you say can break a person."],
+  [0.50,"Imperfect and present beats perfect and tense."],
+  [0.64,"They'll follow where you go."],
+  [0.78,"Soft face. Slow voice. Open attention."],
+  [0.90,"Already a little further in than you were."]
+];
+document.querySelectorAll("#durSeg button").forEach(function(b){
+  b.addEventListener("click", function(){
+    if(running) return;
+    minutes = +b.dataset.min;
+    document.querySelectorAll("#durSeg button").forEach(function(x){ x.setAttribute("aria-pressed", x===b?"true":"false"); });
+  });
+});
+function setCue(text){
+  var c=$("cue"); if(c.textContent===text) return;
+  c.style.opacity=0; setTimeout(function(){ c.textContent=text; c.style.opacity=1; }, 450);
+}
+function breathPos(elapsed, total){
+  // walk through cycles; exhale grows from 4s to 7s across the session
+  var t = 0;
+  while(true){
+    var prog = Math.min(t/total, 1);
+    var inh = 4, exh = 4 + 3*Math.min(prog/0.7, 1);
+    if(elapsed < t+inh) return {phase:"breathe in", f:(elapsed-t)/inh, up:true};
+    if(elapsed < t+inh+exh) return {phase:"and out", f:(elapsed-t-inh)/exh, up:false};
+    t += inh+exh;
+  }
+}
+function ease(x){ return 0.5-0.5*Math.cos(Math.PI*x); }
+function frame(now){
+  var total = minutes*60, el = (now-t0)/1000;
+  if(el >= total){ stopSettle(true); return; }
+  var b = breathPos(el, total), s = b.up ? 1+1.3*ease(b.f) : 2.3-1.3*ease(b.f);
+  $("orb").style.transform = "scale("+s.toFixed(3)+")";
+  $("phase").textContent = b.phase;
+  var p = el/total, cue = cues[0][1];
+  cues.forEach(function(c){ if(p>=c[0]) cue=c[1]; });
+  setCue(cue);
+  $("settleBar").style.width = (p*100).toFixed(1)+"%";
+  raf = requestAnimationFrame(frame);
+}
+function stopSettle(finished){
+  running=false; cancelAnimationFrame(raf);
+  $("settleBtn").textContent="Begin";
+  $("orb").style.transform="scale(1)"; $("phase").textContent="";
+  $("settleBar").style.width = finished ? "100%" : "0%";
+  setCue(finished ? "You've gone first. Now bring them with you." : "Whenever you're ready.");
+}
+$("settleBtn").addEventListener("click", function(){
+  if(running){ stopSettle(false); return; }
+  running=true; t0=performance.now(); $("settleBtn").textContent="Stop";
+  raf=requestAnimationFrame(frame);
+});
+
+/* ---------------- FORGE ---------------- */
+var ISSUES = [
+  {n:"Can't get started on tasks", l:"ADHD", from:"the task looming like a wall", to:"the first small step appearing on its own"},
+  {n:"Attention scattering", l:"ADHD", from:"attention scattering in ten directions", to:"attention gathering wherever you choose to place it"},
+  {n:"Time slipping away", l:"ADHD", from:"hours slipping by unnoticed", to:"a quiet inner sense of where you are in the day"},
+  {n:"Racing mind at bedtime", l:"ADHD", from:"thoughts racing once the lights go out", to:"thoughts thinning out like late-night traffic"},
+  {n:"Nicotine cravings", l:"Addiction", from:"the urge rising and demanding", to:"the urge cresting and passing on its own"},
+  {n:"The evening drink", l:"Addiction", from:"the automatic reach at the end of the day", to:"a pause where a new choice can live"},
+  {n:"Endless scrolling", l:"Addiction", from:"the thumb moving before you've decided", to:"noticing, and setting it down"},
+  {n:"Gambling urges", l:"Addiction", from:"the pull of just one more", to:"that pull loosening its grip"},
+  {n:"Skipping workouts", l:"Fitness", from:"the couch winning by default", to:"your body asking to move"},
+  {n:"Late-night snacking", l:"Fitness", from:"eating on autopilot", to:"tasting, noticing, and being done"},
+  {n:"Emotional eating", l:"Fitness", from:"food standing in for feelings", to:"feelings being felt and food being just food"},
+  {n:"Sugar cravings", l:"Fitness", from:"sweetness calling loudly", to:"that call fading into background noise"}
+];
+var WORLDS = [
+  {n:"Beekeeper", c:"beekeeping", a:"the low hum of the hive", b:"smoke drifting slowly over the frames", d:"the weight of a frame full of honey"},
+  {n:"Long-haul trucker", c:"driving the big rigs", a:"the steady drone of the engine", b:"mile markers sliding past in the dark", d:"the hiss of the air brakes at the end of a long run"},
+  {n:"Gardener", c:"gardening", a:"cool soil under the fingernails", b:"a seedling pushing up through the dirt", d:"the smell of rain on warm earth"},
+  {n:"Gamer", c:"gaming", a:"the loading screen before a new level", b:"the skill tree slowly filling in", d:"the save point glowing just ahead"},
+  {n:"Chef", c:"cooking", a:"the knife finding its rhythm on the board", b:"a sauce reducing, slowly thickening", d:"the quiet after the dinner rush"},
+  {n:"Electrician", c:"wiring", a:"tracing a wire back to its source", b:"the click of a breaker resetting", d:"a dark room flooding with light"},
+  {n:"Surfer", c:"surfing", a:"the swell lifting under the board", b:"the calm water between sets", d:"the moment you stop paddling and simply ride"},
+  {n:"Nurse", c:"nursing", a:"the steady beep of a monitor", b:"the hush of the night shift", d:"a patient's hand finally unclenching"},
+  {n:"Carpenter", c:"woodworking", a:"a long ribbon of wood curling off the plane", b:"measuring twice, slowly", d:"a joint sliding together, snug"},
+  {n:"Sailor", c:"sailing", a:"the sail filling with wind", b:"easing the tiller a few degrees at a time", d:"the harbour lights coming into view"},
+  {n:"Guitarist", c:"playing guitar", a:"fingers finding the frets without looking", b:"a string slowly coming into tune", d:"the last chord ringing out"},
+  {n:"Rock climber", c:"climbing", a:"chalk on the fingertips", b:"reaching for the next hold", d:"looking down at how far you've come"},
+  {n:"Parent", c:"parenting", a:"a small hand in yours", b:"the house finally going quiet", d:"watching them do it on their own"},
+  {n:"Dog owner", c:"training the dog", a:"the leash going slack as the dog settles", b:"the dog circling, then lying down", d:"the walk home, both of you pleasantly tired"}
+];
+var SHAPES = [
+  {n:"The Skill You Already Have", h:"once hard, now automatic",
+   o:"Take them back to when {c} was new and clumsy. Start with {a}, and how it felt before it felt natural.",
+   t:"Something shifted without them forcing it. Let {b} become the moment the effort quietly dropped away, the way {from} can give way to {to}.",
+   l:"Now it's simply what they do. End on {d}, and let them sense this change can become just as automatic."},
+  {n:"Weather Passing", h:"the urge as a storm",
+   o:"Set an ordinary day in the {w}'s world. Let them notice {a}.",
+   t:"A storm rolls in. That storm is {from}. Don't fight it. Let them watch from somewhere sheltered, noticing {b} while the weather does what weather does.",
+   l:"It passes. It always passes. Land on {d}, and on {to}."},
+  {n:"The Dial", h:"control they didn't know they had",
+   o:"Invite them to notice something adjustable in their world. Begin with {a}.",
+   t:"Somewhere there's a dial they never knew they could turn. As it turns, {from} grows quieter and {b} comes into focus.",
+   l:"Leave the dial in their hands. Close on {d}: {to}, set wherever they choose."},
+  {n:"Two Parts, One Goal", h:"the old habit was protecting something",
+   o:"Two characters in the {w}'s world: one who keeps doing the old thing, one who wants change. Introduce them around {a}.",
+   t:"It turns out the old part was protecting something all along, and it's tired. Let them negotiate near {b}, moving from {from} toward {to}.",
+   l:"Both get what they need. End on {d}, with both parts working the same side."},
+  {n:"The Season Turning", h:"change already underway",
+   o:"Start in late winter of the {w}'s year. {A}. Things look stuck.",
+   t:"Under the surface, change has already begun. {B}. {From} is thawing, slowly.",
+   l:"Spring isn't forced. It arrives. Land on {d}, and on {to}."},
+  {n:"The Long Road Home", h:"a journey, one stretch at a time",
+   o:"Begin the journey with {a}. They don't need to see the whole route.",
+   t:"Partway along there's a fork: the old road, {from}, and a newer one. Let {b} mark the choice.",
+   l:"Arriving. {D}. And {to} now feels as familiar as home."}
+];
+var CURVES = [
+  ["Client opens their eyes: “I don't think I'm hypnotized.”", "Agree and use it. “That's fine, you don't need to be. Just notice how comfortable you can get with your eyes open… and they can close again whenever they're ready.”"],
+  ["Client starts to giggle.", "Laughter is a response, which means they're with you. “That's right… and you can enjoy that, and let it carry you a little deeper.”"],
+  ["A phone rings in the next room.", "Fold it in. “And every sound around you can become a signal to let go a little more.”"],
+  ["You lose your place completely.", "Pause. Silence is hypnotic. “Take a moment now to really notice…” and then carry on. They never saw your plan."],
+  ["Client's eyes well up with tears.", "Emotion isn't breakage. Slow down, soften your voice: “That's right, let it move through… you're safe here,” and give it room."],
+  ["Client starts lightly snoring.", "Lift your voice a touch. “And as you continue to hear my voice, part of you stays right here with me…”"],
+  ["Client shifts, coughs, scratches their nose.", "Ratify it. “Good, make yourself even more comfortable. Each small movement settles you further.”"],
+  ["Afterward, your partner says: “I didn't feel anything.”", "Get curious, not defensive. “What did you notice?” There's always something: heaviness, time distortion, a single image."],
+  ["Your mind says: “That metaphor is cheesy.”", "It doesn't land in their ears the way it sounds in your head. Keep your voice slow and keep going. Delivery carries more than wording."]
+];
+
+var lane = store.get("lane","all");
+var cur = {issue:null, world:null, shape:null};
+function issuesFor(){ return lane==="all" ? ISSUES : ISSUES.filter(function(i){ return i.l===lane; }); }
+function fill(tpl){
+  var map = {
+    w:cur.world.n.toLowerCase(), c:cur.world.c, a:cur.world.a, b:cur.world.b, d:cur.world.d,
+    from:cur.issue.from, to:cur.issue.to
+  };
+  return tpl.replace(/\{(\w+)\}/g, function(_, k){
+    var low = k.toLowerCase(); var v = map[low] != null ? map[low] : (map[k] || "");
+    return k.charAt(0)===k.charAt(0).toUpperCase() && k!==low ? cap(v) : v;
+  });
+}
+function flick(id){ var el=$(id); el.classList.remove("spin"); void el.offsetWidth; el.classList.add("spin"); }
+function render(){
+  $("rIssue").querySelector("b").innerHTML = cur.issue.n + ' <span class="lane">'+cur.issue.l+'</span>';
+  $("rIssue").querySelector(":scope > span").textContent = "tap to change";
+  $("rWorld").querySelector("b").textContent = cur.world.n;
+  $("rWorld").querySelector("span").textContent = "tap to change";
+  $("rShape").querySelector("b").textContent = cur.shape.n;
+  $("rShape").querySelector("span").textContent = cur.shape.h;
+  $("b0").querySelector("p").textContent = fill(cur.shape.o);
+  $("b1").querySelector("p").textContent = fill(cur.shape.t);
+  $("b2").querySelector("p").textContent = fill(cur.shape.l);
+}
+function spin(which){
+  if(which==="issue"||which==="all"){ var pool=issuesFor(); cur.issue = pick(pool, pool.indexOf(cur.issue)>-1?cur.issue:null); flick("rIssue"); }
+  if(which==="world"||which==="all"){ cur.world = pick(WORLDS, cur.world); flick("rWorld"); }
+  if(which==="shape"||which==="all"){ cur.shape = pick(SHAPES, cur.shape); flick("rShape"); }
+  render();
+}
+$("rIssue").addEventListener("click", function(){ spin("issue"); });
+$("rWorld").addEventListener("click", function(){ spin("world"); });
+$("rShape").addEventListener("click", function(){ spin("shape"); });
+$("shuffleBtn").addEventListener("click", function(){ spin("all"); $("curve").classList.remove("show"); });
+function syncLane(){ document.querySelectorAll("#laneSeg button").forEach(function(b){ b.setAttribute("aria-pressed", b.dataset.lane===lane?"true":"false"); }); }
+document.querySelectorAll("#laneSeg button").forEach(function(b){
+  b.addEventListener("click", function(){ lane=b.dataset.lane; store.set("lane",lane); syncLane(); spin("issue"); });
+});
+syncLane();
+spin("all");
+
+// 90-second speaking timer: highlights Open -> Turn -> Land
+var speakT = null, speakLeft = 90;
+var whispers = ["Slower than feels natural.","Keep talking. Imperfect is fine.","Use their words, not yours.","Let the pauses work for you.","You're allowed to make this up as you go."];
+function fmt(s){ return Math.floor(s/60)+":"+("0"+(s%60)).slice(-2); }
+function beat(i){ for(var k=0;k<3;k++) $("b"+k).classList.toggle("on", k===i); }
+function stopSpeak(done){
+  clearInterval(speakT); speakT=null; speakLeft=90; $("timer").textContent="1:30";
+  $("speakBtn").textContent="Speak it · 90s"; beat(-1);
+  $("whisper").textContent = done ? "Done. Ask your partner the three questions below." : "";
+}
+$("speakBtn").addEventListener("click", function(){
+  if(speakT){ stopSpeak(false); return; }
+  $("speakBtn").textContent="Stop"; beat(0); $("whisper").textContent=whispers[0];
+  speakT = setInterval(function(){
+    speakLeft--; $("timer").textContent=fmt(speakLeft);
+    var el = 90-speakLeft;
+    beat(el<30?0:el<60?1:2);
+    if(el%18===0) $("whisper").textContent = whispers[(el/18)%whispers.length];
+    if(speakLeft<=0) stopSpeak(true);
+  }, 1000);
+});
+var lastCurve = null;
+$("curveBtn").addEventListener("click", function(){
+  lastCurve = pick(CURVES, lastCurve);
+  $("cWhat").textContent = lastCurve[0]; $("cHow").textContent = lastCurve[1];
+  $("curve").classList.remove("show"); void $("curve").offsetWidth; $("curve").classList.add("show");
+});
+$("aiBtn").addEventListener("click", function(){
+  var p = "I'm a hypnotist working on a therapeutic metaphor, and I don't want a script to memorize.\n\n"+
+    "Client issue: "+cur.issue.n+" ("+cur.issue.l+"). The change we want: from "+cur.issue.from+" to "+cur.issue.to+".\n"+
+    "Client's world: "+cur.world.n+". Sensory anchors I can draw on: "+cur.world.a+"; "+cur.world.b+"; "+cur.world.d+".\n"+
+    "Metaphor shape: "+cur.shape.n+" ("+cur.shape.h+").\n\n"+
+    "Give me 3 different seed versions, each under 120 words. Use permissive language, present tense, and rich sensory detail from the client's world, and never mention the problem directly. "+
+    "After each one, list 3 embedded suggestions I could mark with my voice, and one place to pause.";
+  function ok(){ toast("Prompt copied. Paste it into your AI of choice."); }
+  function fallback(){
+    var ta=document.createElement("textarea"); ta.value=p; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); ok(); }catch(e){ toast("Couldn't copy. Your browser blocked it."); }
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(p).then(ok, fallback); } else fallback();
+});
+
+/* ---------------- ONE STEP ---------------- */
+var STEPS = [
+  ["Claim","Write one sentence that leads with what you already are.","You've trained hypnotists for over ten years. A practitioner's credibility usually sits downstream of a trainer's, not the other way round.","Open a note and type: “I've spent 10+ years teaching people how to do this.” That's it."],
+  ["Claim","Pick your first lane: ADHD, addiction, or fitness.","Just for now. You can add the others later. One lane makes everything after this easier to write.","Pick the one you could talk about for an hour without notes."],
+  ["Claim","Check the practice requirements where you live.","Some places regulate titles or require registration to see clients. Know before you advertise.","Search “[your state or country] hypnotherapist requirements” and read one page."],
+  ["Claim","List five people who'd send you a client.","Former students, colleagues, anyone who has watched you teach.","Write down one name."],
+  ["Offer","Sketch a 3-session pilot package for your lane.","Three sessions is enough to get results and short enough to say yes to.","Just give it a name."],
+  ["Offer","Draft a message offering three reduced-rate pilot spots in exchange for honest testimonials.","This is how a trainer gets practitioner proof quickly.","Write the first line. Don't send anything."],
+  ["Offer","Send that message to one person.","One. Not a broadcast.","Open the conversation with them. Typing can wait."],
+  ["Offer","Book your first pilot session.","Then use Settle before they arrive.","Put a tentative block in your calendar."],
+  ["Visible","Ask a pilot client for a two-sentence testimonial.","Specific beats glowing. “What changed for you?” works well.","Write the exact question you'll ask."],
+  ["Visible","Make one page where people can book you.","A single page with a booking link is plenty to start.","Choose the name or URL."],
+  ["Visible","Post one teaching moment publicly.","Teaching is the part you're already good at, so lead with it.","Write the opening line only."],
+  ["Visible","Record a 5-minute self-hypnosis audio for your lane.","It's a free sample that does the convincing for you.","Write the first sentence you'd say."],
+  ["Paid","Set your full rate.","Use the number a trainer with ten years behind them would charge.","Write a number down. Any number. You can change it."],
+  ["Paid","Book your first full-rate client.","This is the step that turns it from a plan into a practice.","Tell one person you're taking bookings."],
+  ["Paid","Write what you'd tell a student who just did all this.","You'd be proud of them, so say it to yourself.","One sentence."]
+];
+var done = store.get("done", []);
+var idx = store.get("idx", 0);
+var smaller = false;
+function nextUndone(from){
+  for(var k=1;k<=STEPS.length;k++){ var j=(from+k)%STEPS.length; if(done.indexOf(j)<0) return j; }
+  return -1;
+}
+function saveSteps(){ store.set("done",done); store.set("idx",idx); }
+function renderStep(){
+  var allDone = done.length>=STEPS.length;
+  if(!allDone && done.indexOf(idx)>-1) idx = nextUndone(idx);
+  $("sBtns").style.display = allDone ? "none" : "";
+  if(allDone){
+    $("sStage").textContent="Practicing";
+    $("sTitle").innerHTML='<span class="celebrate">You went first.</span>';
+    $("sWhy").textContent="Every step is done. You're a hypnotherapist who also trains, not the other way round.";
+    $("sTiny").classList.remove("show");
+  } else {
+    var s=STEPS[idx];
+    $("sStage").textContent=s[0]; $("sTitle").textContent=s[1]; $("sWhy").textContent=s[2]; $("sTinyText").textContent=s[3];
+    $("sTiny").classList.toggle("show", smaller);
+    $("smallerBtn").textContent = smaller ? "Show full step" : "Too big";
+  }
+  var dots=$("dots"); dots.innerHTML="";
+  STEPS.forEach(function(_,j){ var i=document.createElement("i"); if(done.indexOf(j)>-1) i.className="done"; else if(j===idx && !allDone) i.className="cur"; dots.appendChild(i); });
+  $("count").textContent = done.length+" of "+STEPS.length+" done";
+  var ul=$("ladder"); ul.innerHTML="";
+  STEPS.forEach(function(s,j){
+    var li=document.createElement("li"); if(done.indexOf(j)>-1) li.className="done";
+    li.innerHTML='<span class="st"></span><span class="tx"></span>';
+    li.querySelector(".st").textContent=s[0]; li.querySelector(".tx").textContent=s[1];
+    var b=document.createElement("button"); b.className="btn small";
+    if(done.indexOf(j)>-1){ b.textContent="Undo"; b.onclick=function(){ done.splice(done.indexOf(j),1); idx=j; saveSteps(); renderStep(); }; }
+    else { b.textContent="Focus"; b.onclick=function(){ idx=j; smaller=false; saveSteps(); renderStep(); window.scrollTo({top:0,behavior:"smooth"}); }; }
+    li.appendChild(b); ul.appendChild(li);
+  });
+}
+$("doneBtn").addEventListener("click", function(){
+  if(done.indexOf(idx)<0) done.push(idx);
+  smaller=false;
+  var n=nextUndone(idx); if(n>-1) idx=n;
+  saveSteps(); renderStep();
+  toast(done.length>=STEPS.length ? "All of it. Well done." : "Done. That counts.");
+});
+$("smallerBtn").addEventListener("click", function(){ smaller=!smaller; renderStep(); });
+$("otherBtn").addEventListener("click", function(){ var n=nextUndone(idx); if(n>-1 && n!==idx){ idx=n; smaller=false; saveSteps(); renderStep(); } else toast("This is the only one left."); });
+$("resetBtn").addEventListener("click", function(){
+  if(!confirm("Reset One Step progress?")) return;
+  done=[]; idx=0; smaller=false; saveSteps(); renderStep();
+});
+renderStep();
+})();
+</script>
+</body>
+</html>
